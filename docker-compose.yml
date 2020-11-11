@@ -1,0 +1,37 @@
+x-postgress-pass: &x-postgress-pass 'postgres'
+x-postgress-user: &x-postgress-user 'postgres'
+x-postgress-db: &x-postgress-db 'authdb'
+
+version: "3.7"
+services:
+  postgres:
+    image: postgres
+    container_name: auth-postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: *x-postgress-pass
+      POSTGRES_USER: *x-postgress-user
+      POSTGRES_DB: *x-postgress-db
+    ports:
+      - 5432:5432
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth-api
+    restart: always
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    environment:
+      APP_PORT: 8000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USERNAME: *x-postgress-user
+      POSTGRES_DATABASE: *x-postgress-db
+      POSTGRES_PASSWORD: *x-postgress-pass
+    depends_on:
+      - postgres
+    ports:
+      - 8000:8000
